@@ -14,7 +14,7 @@ HousePrice <- 200000
 DownPayment <- 20000
 InterestRate <- 0.04
 TaxRate <- 0.013
-MortgageLength <- 15
+MortgageLength <- 30
 
 Rent <- 600
 Roommate <- 400
@@ -49,7 +49,10 @@ for(i in 2:360){
 
 
 # Plot
+timeseries <- ggplot(data = df) + 
+     geom_line(aes(month,CumulativeInterest)) +
+     geom_line(aes(month,CumulativeAppartment))
 
-
+print(timeseries)
 
 
