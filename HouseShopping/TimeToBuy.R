@@ -8,6 +8,7 @@
 
 # Import libraries
 library(ggplot2)
+library(reshape2)
 
 # House terms
 HousePrice <- 200000
@@ -47,11 +48,26 @@ for(i in 2:360){
      df$CumulativeEquity[i] <- df$MonthlyEquity[i] + df$CumulativeEquity[i-1]
 }
 
+# Subset to only graphing parameters
+scenarios <- df[,c("month","CumulativeInterest","CumulativeAppartment")]
+
+# Reshape to plot
+scenarios <- melt(scenarios, id="month")
 
 # Plot
-timeseries <- ggplot(data = df) + 
-     geom_line(aes(month,CumulativeInterest)) +
-     geom_line(aes(month,CumulativeAppartment))
+timeseries <- ggplot(data = scenarios) + 
+     geom_line(aes(month,value, colour=variable)) +
+     theme_bw()+
+     xlab("Month")+
+     ylab("Cumulative Cost ($)")+
+     theme(legend.justification=c(0,1), 
+           legend.position=c(0,1), 
+           legend.title=element_blank(), 
+           legend.background = element_rect(fill="transparent"),
+           plot.title = element_text(size = rel(2)),
+           axis.text = element_text(size = rel(1.2)),
+           axis.title = element_text(size = rel(1.5)),
+           legend.text = element_text(size = rel(1.5)))
 
 print(timeseries)
 
