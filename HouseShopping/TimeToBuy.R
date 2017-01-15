@@ -11,7 +11,7 @@ library(ggplot2)
 library(reshape2)
 
 # House terms
-HousePrice <- 164000
+HousePrice <- 200000
 DownPayment <- 10000
 InterestRate <- 0.04
 TaxRate <- 0.013
@@ -19,7 +19,7 @@ MortgageLength <- 15
 
 # Other factors
 Rent <- 600
-Roommate <- 400
+WithRoommate <- 300
 IncomeTaxRate <- 0.25 + 0.0575
 Income <- 75000
 
@@ -33,28 +33,40 @@ MonthlyPayment <- (HousePrice - DownPayment)*
 # Calculate time series
 month <- c(1:360)
 df <- data.frame(month)
-df$CumulativeAppartment <- df$month*Rent
+df$Appartment <- df$month*Rent
 df$CumulativeHouse <- df$month*MonthlyPayment
 
 # Calculate first row 
 df$MonthlyInterest[1] <-(HousePrice-DownPayment)*MonthlyEffectiveInterest
 df$MonthlyEquity[1] <- MonthlyPayment - df$MonthlyInterest[1]
-df$CumulativeInterest[1] <- df$MonthlyInterest[1]
+df$MortgageInterest[1] <- df$MonthlyInterest[1]
 df$CumulativeEquity[1] <- df$MonthlyEquity[1]
 
-# Calculate remainder of timeseries 
-for(i in 2:360){
+# Calculate first year
+for(i in 2:11){
      df$MonthlyInterest[i] <- MonthlyEffectiveInterest*(HousePrice-DownPayment-df$CumulativeEquity[i-1])
      df$MonthlyEquity[i] <- MonthlyPayment - df$MonthlyInterest[i]
-     df$CumulativeInterest[i] <- df$MonthlyInterest[i] + df$CumulativeInterest[i-1]
+     df$MortgageInterest[i] <- df$MonthlyInterest[i] + df$MortgageInterest[i-1]
      df$CumulativeEquity[i] <- df$MonthlyEquity[i] + df$CumulativeEquity[i-1]
 }
 
+# Remainder of timeseries include income tax write offs
+for(i in 12:360){
+     df$MonthlyInterest[i] <- MonthlyEffectiveInterest*(HousePrice-DownPayment-df$CumulativeEquity[i-1])
+     df$MonthlyEquity[i] <- MonthlyPayment - df$MonthlyInterest[i]
+     df$MortgageInterest[i] <- df$MonthlyInterest[i] + df$MortgageInterest[i-1]
+     df$CumulativeEquity[i] <- df$MonthlyEquity[i] + df$CumulativeEquity[i-1]
+     if(i%%12==0){
+          df$MortgageInterest[i] <- df$MortgageInterest[i]-
+          (sum(df$MonthlyInterest[(i-11):i])*IncomeTaxRate)}
+
+}
+
 # Calculate with roomate
-df$Roommate <- df$CumulativeInterest - Roommate
+df$WithRoommate <- df$MortgageInterest - (WithRoommate*month)
 
 # Subset to only graphing parameters
-scenarios <- df[,c("month","CumulativeInterest","CumulativeAppartment", "Roommate")]
+scenarios <- df[,c("month","Appartment","MortgageInterest","WithRoommate")]
 
 # Reshape to plot
 scenarios <- melt(scenarios, id="month")
@@ -65,7 +77,7 @@ timeseries <- ggplot(data = scenarios) +
      theme_bw()+
      xlab("Month")+
      ylab("Cumulative Cost ($)")+
-     coord_cartesian(ylim = c(0,30000), xlim = c(0, 24))+
+     coord_cartesian(ylim = c(0,30000), xlim = c(0, 60))+
      theme(legend.justification=c(0,1), 
            legend.position=c(0,1), 
            legend.title=element_blank(), 
