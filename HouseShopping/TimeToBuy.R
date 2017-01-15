@@ -11,15 +11,17 @@ library(ggplot2)
 library(reshape2)
 
 # House terms
-HousePrice <- 200000
-DownPayment <- 20000
+HousePrice <- 164000
+DownPayment <- 10000
 InterestRate <- 0.04
 TaxRate <- 0.013
-MortgageLength <- 30
+MortgageLength <- 15
 
+# Other factors
 Rent <- 600
 Roommate <- 400
-
+IncomeTaxRate <- 0.25 + 0.0575
+Income <- 75000
 
 # Calculated monthly payments following the equation:
 #    P <- (Pv*R) / [1 - (1 + R)^(-n)] 
@@ -48,18 +50,22 @@ for(i in 2:360){
      df$CumulativeEquity[i] <- df$MonthlyEquity[i] + df$CumulativeEquity[i-1]
 }
 
+# Calculate with roomate
+df$Roommate <- df$CumulativeInterest - Roommate
+
 # Subset to only graphing parameters
-scenarios <- df[,c("month","CumulativeInterest","CumulativeAppartment")]
+scenarios <- df[,c("month","CumulativeInterest","CumulativeAppartment", "Roommate")]
 
 # Reshape to plot
 scenarios <- melt(scenarios, id="month")
 
 # Plot
 timeseries <- ggplot(data = scenarios) + 
-     geom_line(aes(month,value, colour=variable)) +
+     geom_line(aes(month,value, colour=variable), size = 1) +
      theme_bw()+
      xlab("Month")+
      ylab("Cumulative Cost ($)")+
+     coord_cartesian(ylim = c(0,30000), xlim = c(0, 24))+
      theme(legend.justification=c(0,1), 
            legend.position=c(0,1), 
            legend.title=element_blank(), 
