@@ -21,7 +21,6 @@ MortgageLength <- 15
 Rent <- 600
 WithRoommate <- 300
 IncomeTaxRate <- 0.25 + 0.0575
-Income <- 75000
 
 # Calculated monthly payments following the equation:
 #    P <- (Pv*R) / [1 - (1 + R)^(-n)] 
