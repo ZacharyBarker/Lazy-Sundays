@@ -76,7 +76,7 @@ timeseries <- ggplot(data = scenarios) +
      theme_bw()+
      xlab("Month")+
      ylab("Cumulative Cost ($)")+
-     coord_cartesian(ylim = c(0,30000), xlim = c(0, 60))+
+     coord_cartesian(ylim = c(0,30000), xlim = c(0, 360))+
      theme(legend.justification=c(0,1), 
            legend.position=c(0,1), 
            legend.title=element_blank(), 
